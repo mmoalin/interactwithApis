@@ -4,18 +4,27 @@ const ARTIST = 'ARTIST';
 const ALBUMS = 'ALBUMS';
 const TRACKS = 'TRACKS';
 
-const parseTracks = ((results) => {
-    let toRender = results.map(result => {
-        let { tracks, format, title } = result;
-        tracks.map(row =>
+const parseTracks = ((results, title, format) => {
+    let parseToJSX = (tracks, title, format) => {
+        console.log('at parseToJSX');
+        return tracks.map(row =>
             <tr key={row.id}>
-                <td>{row.position}</td>
                 <td>{row.id}</td>
+                <td>{row.position}</td>
                 <td>{row.title}</td>
                 <td>{title}</td>
                 <td>{format}</td>
-            </tr>)
-    });
+            </tr>);
+    };
+    let reducer = (acc, cur, index) => {
+        let { tracks, format, title } = cur;
+        let partialRender = parseToJSX(tracks, title, format);
+        if (index !== 1)
+            return [...partialRender, ...acc];
+        else
+            return partialRender;
+    }
+    let toRender = results.length === 1 ? parseToJSX(results[0].tracks, results[0].title, results[0].format) : results.reduce(reducer);
     return toRender;
 })
 
@@ -37,7 +46,7 @@ const DisplayResults = (props) => {
             setMode(TRACKS);
             setResults(ApiData["media"]);
         }
-    });
+    }, [ApiData]);
 
     if (!results) return null;
 
@@ -66,8 +75,8 @@ const DisplayResults = (props) => {
     return <table>
         <thead>
             <tr>
-                {mode !== TRACKS && <th>Position</th>}
                 <th>ID</th>
+                {mode === TRACKS && <th>Position</th>}
                 <th>Name</th>
                 {mode === ARTIST && <th>Country</th>}
                 {mode === ARTIST && <th>Score</th>}

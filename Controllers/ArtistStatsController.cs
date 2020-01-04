@@ -17,7 +17,7 @@ public class ArtistStatsController : ControllerBase
             .Substring(Request.QueryString.Value
                 .IndexOf('?') + 1)
                     .Split('=');
-        MusicStatService lo = new MusicStatService();
+        MusicStatService lo = new MusicStatService(); //TODO: dependency injection
         Task<string> res = null;
         if (keyVal[0] == "artistname")//ArtistResults
             res = lo.getArtists(keyVal[1]);

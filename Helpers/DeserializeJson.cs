@@ -15,11 +15,19 @@ namespace ArtistStats_web.Helpers
         }
         public T Deserialize(string json)
         {
-            var options = new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true,
-            };
-            return JsonSerializer.Deserialize<T>(json, options);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                };
+                return JsonSerializer.Deserialize<T>(json, options);
+
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                throw ex;
+            }
         }
     }
 }

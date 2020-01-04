@@ -10,7 +10,21 @@ export class FetchData extends Component {
 
   componentDidMount() {
     this.populateWeatherData();
-  }
+    }
+
+    renderForm() {
+        return (
+            <div>
+                <h1>Average words in an album</h1>
+                <p>Get the average words in an album for a given artist</p>
+                <form onSubmit={this.getTracks}>
+                    <span>Name:</span>
+                    <input type="text" name="name" onChange={this.handleChange} />
+                    <input type="submit" value="Submit" />
+                </form>
+            </div>
+        )
+    }
 
   static renderForecastsTable(forecasts) {
     return (

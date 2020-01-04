@@ -44,7 +44,7 @@ const DisplayResults = (props) => {
         }
         if (ApiData && ApiData["media"]) {
             setMode(TRACKS);
-            setResults(ApiData["media"]);
+            setResults(ApiData["media"]);//associate with url segment...
         }
     }, [ApiData]);
 

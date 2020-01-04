@@ -10,5 +10,7 @@ namespace ArtistStats_web.Models
         public string ID { get; set; }
         public int Position { get; set; }
         public string Title { get; set; }
+        public string Release { get; set; }
+        public string ReleaseID { get; internal set; }
     }
 }

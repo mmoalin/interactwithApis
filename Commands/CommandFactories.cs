@@ -8,11 +8,22 @@ namespace ArtistStats_web.Commands
         protected Command _command;
         public abstract Command GetCommand();
     }
+    public class GetLyricsFactory : CommandFactory
+    {
+        public GetLyricsFactory(Models.Track track, Services.IMusicStatService service)
+        {
+            _command = new GetLyrics(track, service);
+        }
+        public override Command GetCommand()
+        {
+            return _command;
+        }
+    }
     public class GetTracksByReleaseIDFactory : CommandFactory
     {
-        public GetTracksByReleaseIDFactory(string releaseID, Services.IMusicStatService service)
+        public GetTracksByReleaseIDFactory(Models.Release release, Services.IMusicStatService service)
         {
-            _command = new GetTracksByReleaseID(releaseID, service);
+            _command = new GetTracksByReleaseID(release, service);
         }
         public override Command GetCommand()
         {
@@ -21,9 +32,9 @@ namespace ArtistStats_web.Commands
     }
     public class GetReleasesByArtistsIDFactory : CommandFactory
     {
-        public GetReleasesByArtistsIDFactory(string artistID, Services.IMusicStatService service)
+        public GetReleasesByArtistsIDFactory(Models.Artist artist, Services.IMusicStatService service)
         {
-            _command = new GetReleasesByArtistsID(artistID, service);
+            _command = new GetReleasesByArtistsID(artist, service);
         }
         public override Command GetCommand()
         {

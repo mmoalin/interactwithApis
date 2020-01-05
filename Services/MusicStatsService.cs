@@ -45,13 +45,9 @@ namespace ArtistStats_web.Services
         public async Task<string> getLyrics(string artist, string trackTitle)
         {
             var uri = $"https://api.lyrics.ovh/v1/{artist}/{trackTitle}";
-            var raw = await FetchData(uri);
-            return new Helpers.DeserializeJson<TrackLyrics>().Deserialize(raw).Lyrics;
+            return await FetchData(uri);
         }
 
     }
-    public class TrackLyrics
-    {
-        public string Lyrics { get; set; }
-    }
+
 }

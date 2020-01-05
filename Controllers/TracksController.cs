@@ -24,13 +24,25 @@ public class TracksController : ControllerBase
                     .Split('=');
         MusicInterpretor lo = new MusicInterpretor(new MusicStatService());//TODO: dependency injection
         Artist artist;
+        string artistName;
+        string option = "";
         if (keyVal[0] == "artistname")//ArtistResults
         {
-            artist = lo.PickArtist(keyVal[1]);
+            if (keyVal[1].Contains('&'))
+            {
+                var request = keyVal[1].Split('&');
+                option = request[1];
+                artistName = request[0];
+            }
+            else
+                artistName = keyVal[1];
 
-            Track[] tracks = lo.GetUniqueTracks(new List<Release>(artist.Releases));
+            artist = lo.PickArtist(artistName);
+            Track[] tracks = artist.Releases.Where(x => (x != null && x.Media != null)).SelectMany(x => x.Media).SelectMany(x => x.Tracks).ToArray(); ;
+            if(option == "dedupedOption")
+                    tracks = lo.GetUniqueTracks(new List<Release>(artist.Releases));
+
             _tracks = new List<Track>(tracks);
-                //artist.Releases.Where(x => (x != null && x.Media != null)).SelectMany(x => x.Media).SelectMany(x => x.Tracks).ToList();
         }
         return _tracks;
     }

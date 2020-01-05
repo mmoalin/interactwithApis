@@ -24,8 +24,7 @@ namespace ArtistStats_web.Helpers
                 return JsonSerializer.Deserialize<T>(json, options);
 
             }
-            catch (System.Text.Json.JsonException ex)
-            {
+            catch (System.Text.Json.JsonException ex){
                 throw ex;
             }
         }

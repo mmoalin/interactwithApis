@@ -8,5 +8,7 @@ namespace ArtistStats_web.Services
         Track[] GetUniqueTracks(List<Release> releases);
         List<Release> GetUniqueTracks(Artist artist);
         Artist PickArtist(string artistName);
+        Lyrics GetLyrics(Track track);
+        int calculateAverageWords(Artist Artist);
     }
 }

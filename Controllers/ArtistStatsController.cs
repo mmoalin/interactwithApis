@@ -28,8 +28,17 @@ public class ArtistStatsController : ControllerBase
             artistName = keyVal[1];
         else
             artistName = keyVal[0];
+        try
+        {
         artist = lo.PickArtist(artistName);
         return lo.calculateArtistStats(artist);
+        }
+        catch (System.ArgumentOutOfRangeException)
+        {
+            var err = new ArtistStats();
+            err.ArtistName = string.Format("An error occurred with {0}..", artistName);
+            return err;
+        }
 
     }
 }

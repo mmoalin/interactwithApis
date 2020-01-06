@@ -44,7 +44,8 @@ public class TracksController : ControllerBase
             {
                 tracks[i].Artist = null;
             }
-        }
+            _tracks = tracks.ToList() ;
+        }        
         return _tracks;
     }
 

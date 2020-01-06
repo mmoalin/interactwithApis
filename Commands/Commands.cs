@@ -264,9 +264,9 @@ namespace ArtistStats_web.Commands
             command.setCommandTask(command.ExecuteAsync());
             return command;
         }
-        public GetTracksByReleaseIDAsync FillTracksAsyncCommands(Release release)
+        public static GetTracksByReleaseIDAsync FillTracksAsyncCommands(Release release, IMusicStatService service)
         {
-            CommandFactory commandFactory = new GetTracksByReleaseIDAsyncFactory(release, _service);
+            CommandFactory commandFactory = new GetTracksByReleaseIDAsyncFactory(release, service);
             Command command = commandFactory.GetCommand();
             command.setCommandTask(command.ExecuteAsync());
             return (GetTracksByReleaseIDAsync)command;
@@ -281,7 +281,7 @@ namespace ArtistStats_web.Commands
             for (int i = 0; i < ReleaseResults.Releases.Count; i++)
             {
                 ReleaseResults.Releases[i].Artist = _artist;
-                commands.Add(FillTracksAsyncCommands(ReleaseResults.Releases[i]));
+                commands.Add(FillTracksAsyncCommands(ReleaseResults.Releases[i], _service));
             }
             Task[] tasks = commands.Select(x => x.Task).ToArray();
             Exception exceptions;

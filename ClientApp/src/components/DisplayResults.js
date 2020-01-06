@@ -33,6 +33,7 @@ const DisplayResults = (props) => {
     var { ApiData, GetReleases, GetTracks } = props;
     const [results, setResults] = useState(null);
     const [mode, setMode] = useState(ARTIST);
+    
     useEffect(() => {
         if (ApiData && ApiData.artists) {
             setMode(ARTIST);
@@ -54,7 +55,7 @@ const DisplayResults = (props) => {
         <tbody>
             {mode === ARTIST && results.map(row =>
                 <tr key={row.id}>
-                    <td><a className="action" onClick={() => GetReleases(row.id)}> {row.id}</a></td>
+                    <td><a style={{ color: 'white' }} class="badge badge-primary" onClick={() => GetReleases(row.id)}> {row.id}</a></td>
                     <td>{row.name}</td>
                     <td>{row.type}</td>
                     <td>{row.country}</td>
@@ -62,7 +63,7 @@ const DisplayResults = (props) => {
                 </tr>)}
             {mode === ALBUMS && results.map(row =>
                 <tr key={row.id}>
-                    <td><a className="action" onClick={() => GetTracks(row.id)}> {row.id}</a></td>
+                    <td><a style={{color: 'white'}} class="badge badge-primary" onClick={() => GetTracks(row.id)}> {row.id}</a></td>
                     <td>{row.title}</td>
                     <td>{row["primary-type"]}</td>
                     <td>{row["first-release-date"]}</td>

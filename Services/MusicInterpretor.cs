@@ -23,7 +23,6 @@ namespace ArtistStats_web.Services
             string[] words = lyrics.Split(' ');
             return words;
         }
-        
         private Lyrics[] getAllLyrics(Artist artist)
         {
             List<Task<string>> lyricsTasks = new List<Task<string>>();
@@ -72,7 +71,13 @@ namespace ArtistStats_web.Services
         }
         public double calculateAverageWords(Lyrics[] rawlyrics)
         {
-            return getWordsCountFromLyrics(rawlyrics).Average();
+            try
+            {
+                return getWordsCountFromLyrics(rawlyrics).Average();
+            }catch(System.InvalidOperationException e)
+            {
+                return 0;
+            }
         }
         public double CalculateStdDev(Lyrics[] rawlyrics)
         {
@@ -150,7 +155,6 @@ namespace ArtistStats_web.Services
             }
             throw new Exception("No Release data found on top 2 artists");
         }
-
         public ArtistStats calculateArtistStats(Artist Artist)
         {
             ArtistStats stats = new ArtistStats();
@@ -159,12 +163,15 @@ namespace ArtistStats_web.Services
             stats.AverageWords = calculateAverageWords(lyrics);
             stats.StandardDeviation = CalculateStdDev(lyrics);
             stats.Variance = CalculateVariance(lyrics);
-            List<Track> tracks = lyrics.Select(x => x.Track).ToList();
-            /*tracks.Sort((t1, t2) => t1.Length.CompareTo(t2.Length));
-            int longestTrackLength = (int)tracks[0].Length / 60000;
-            int shortestTrackLength = (int)tracks[tracks.Count - 1].Length / 60000;
-            stats.LongestTrack = string.Format("{0} - {1} minutes", tracks[0].Title, longestTrackLength);
-            stats.ShortestTrack = string.Format("{0} - {1} minutes", tracks[tracks.Count - 1].Title, shortestTrackLength);*/
+            List<Track> tracks = lyrics.Where(x => (x.Track.Length != null && x.Track.Length != 0)).Select(x => x.Track).ToList();
+            IEnumerable<Track> query = from track in tracks
+                                       orderby track.Length descending
+                                       select track;
+            tracks = query.ToList();
+            double longestTrackLength = (double)tracks[0].Length / 60000;
+            double shortestTrackLength = (double)tracks[tracks.Count - 1].Length / 60000;
+            stats.LongestTrack = string.Format("{0} - {1} minute(s)", tracks[0].Title, longestTrackLength);
+            stats.ShortestTrack = string.Format("{0} - {1} minute(s)", tracks[tracks.Count - 1].Title, shortestTrackLength);
             return stats;
         }
     }

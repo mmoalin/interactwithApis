@@ -27,7 +27,7 @@ export class CompareArtists extends Component {
         )
     }
 
-  static renderStatsTable(forecasts) {
+  static renderStatsTable(stats) {
     return (
       <table className='table table-striped' aria-labelledby="tabelLabel">
         <thead>
@@ -41,7 +41,7 @@ export class CompareArtists extends Component {
           </tr>
         </thead>
         <tbody>
-          {forecasts.map((row,i) =>
+          {stats.map((row,i) =>
             <tr key={i}>
                 <td>{row.artistName}</td>
                 <td>{row.averageWords}</td>
@@ -62,7 +62,7 @@ export class CompareArtists extends Component {
         : null;
     let contents = this.state.fetching
       ? <p><em>Loading...</em></p>
-        : data;
+        : null;
 
     return (
       <div>
@@ -73,7 +73,8 @@ export class CompareArtists extends Component {
             <input type="text" name="name" onChange={this.handleChange} />
             <input type="submit" value="Submit" />
         </form>
-        {contents}
+            {contents}
+            {data}
       </div>
     );
   }

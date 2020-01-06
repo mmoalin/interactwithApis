@@ -39,8 +39,11 @@ public class TracksController : ControllerBase
 
             artist = lo.PickArtist(artistName);
             Track[] tracks = artist.Releases.Where(x => (x != null && x.Media != null)).SelectMany(x => x.Media).SelectMany(x => x.Tracks).ToArray(); ;
-
-            _tracks = new List<Track>(tracks);
+            //_tracks = tracks.Select(x => x.Artist = null).ToArray(); ;
+            for (int i = 0; i < tracks.Length; i++)
+            {
+                tracks[i].Artist = null;
+            }
         }
         return _tracks;
     }

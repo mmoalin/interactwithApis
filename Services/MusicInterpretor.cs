@@ -160,11 +160,11 @@ namespace ArtistStats_web.Services
             stats.StandardDeviation = CalculateStdDev(lyrics);
             stats.Variance = CalculateVariance(lyrics);
             List<Track> tracks = lyrics.Select(x => x.Track).ToList();
-            tracks.Sort((t1, t2) => t1.Length.CompareTo(t2.Length));
+            /*tracks.Sort((t1, t2) => t1.Length.CompareTo(t2.Length));
             int longestTrackLength = (int)tracks[0].Length / 60000;
             int shortestTrackLength = (int)tracks[tracks.Count - 1].Length / 60000;
             stats.LongestTrack = string.Format("{0} - {1} minutes", tracks[0].Title, longestTrackLength);
-            stats.ShortestTrack = string.Format("{0} - {1} minutes", tracks[tracks.Count - 1].Title, shortestTrackLength);
+            stats.ShortestTrack = string.Format("{0} - {1} minutes", tracks[tracks.Count - 1].Title, shortestTrackLength);*/
             return stats;
         }
     }

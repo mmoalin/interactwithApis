@@ -43,12 +43,12 @@ export class CompareArtists extends Component {
         <tbody>
           {forecasts.map((row,i) =>
             <tr key={i}>
-                <td>{row.ArtistName}</td>
-                <td>{row.AverageWords}</td>
-                <td>{row.Variance}</td>
-                <td>{row.StandardDeviation}</td>
-                <td>{row.LongestTrack}</td>
-                <td>{row.ShortestTrack}</td>
+                <td>{row.artistName}</td>
+                <td>{row.averageWords}</td>
+                <td>{row.variance}</td>
+                <td>{row.standardDeviation}</td>
+                <td>{row.longestTrack}</td>
+                <td>{row.shortestTrack}</td>
             </tr>
           )}
         </tbody>
@@ -83,6 +83,8 @@ async populateStatsData(e) {
     this.setState({ fetching: true });
     const response = await fetch('ArtistStats?' + this.state.ArtistName);
     const data = await response.json();
-    this.setState({ fetching: false, stats: data});
+    let current = this.state.stats;
+    current.push(data);
+    this.setState({ fetching: false, stats: current});
   }
 }

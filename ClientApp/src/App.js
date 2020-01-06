@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Route } from 'react-router';
 import { Layout } from './components/Layout';
 import { Home } from './components/Home';
-import { DataBrowser } from './components/ArtistDataBrowser';
+import { ArtistDataBrowser as DataBrowser } from './components/ArtistDataBrowser';
 import { CompareArtists } from './components/CompareArtists';
 import { FetchTracks } from './components/FetchTracks';
 

@@ -37,7 +37,7 @@ export class NavMenu extends Component {
                   <NavLink tag={Link} className="text-dark" to="/CompareArtists">Compare artists</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink tag={Link} className="text-dark" to="/ArtistDataBrowser">Artist data browser</NavLink>
+                    <NavLink tag={Link} className="text-dark" to="/DataBrowser">Artist data browser</NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/fetch-tracks">Fetch tracks</NavLink>

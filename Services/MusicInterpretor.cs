@@ -10,36 +10,36 @@ namespace ArtistStats_web.Services
 {
     public class MusicInterpretor : IMusicInterpretor
     {
+        public Lyrics[] Lyrics { get; set; }
+        public Artist Artist { get; set; }
         private IMusicStatService _service;
         public MusicInterpretor(IMusicStatService service)
         {
             _service = service;
         }
-        public int GetLyricsWordCount(string lyrics)
+        public string[] GetLyricsWordSplit(string lyrics)
         {
+            lyrics = lyrics.Replace(System.Environment.NewLine, " ");
             string[] words = lyrics.Split(' ');
-            return words.Length;
+            return words;
         }
-        public int calculateAverageWords(Artist artist)
-        {
-            Lyrics[] lyrics = getAllLyrics(artist);
-            return calculateAverageWords(lyrics);
-        }
+        
         private Lyrics[] getAllLyrics(Artist artist)
         {
-            List<Task<Lyrics>> lyricsTasks = new List<Task<Lyrics>>();
-            Lyrics[] lyrics;
+            List<Task<string>> lyricsTasks = new List<Task<string>>();
             Track[] tracks = artist.Releases.Where(x => (x != null && x.Media != null))
                                                         .SelectMany(x => x.Media)
                                                         .SelectMany(x => x.Tracks).ToArray();
-            tracks = GetUniqueTracks(new List<Release>(artist.Releases));
-            Func<object, Lyrics> getLyrics = (object track) =>
-            {
-                return GetLyrics((Track)track); 
-            };
+
+            List<GetLyricsAsync> commands = new List<GetLyricsAsync>();
             for (int i = 0; i < tracks.Length; i++)
             {
-                lyricsTasks.Add(Task<Lyrics>.Factory.StartNew(getLyrics, tracks[i]));
+                CommandFactory commandFactory = new GetLyricsAsyncFactory(tracks[i], _service);
+                Command command = commandFactory.GetCommand();
+                command.setCommandTask(command.ExecuteAsync());
+                GetLyricsAsync getLyricsAsync = (GetLyricsAsync)command;
+                commands.Add(getLyricsAsync);
+                lyricsTasks.Add(getLyricsAsync.Task);
             }
             System.Exception exceptions;
             try
@@ -49,82 +49,65 @@ namespace ArtistStats_web.Services
             catch (System.Exception e)
             {
                 exceptions = e;
-                //throw;
             }
-            lyrics = lyricsTasks.Where(x => x.Result != null).Select(x => x.Result).ToArray();
-            return lyrics;
+            DeserializeJson<Lyrics> deserializeJson = new DeserializeJson<Lyrics>();
+            commands.RemoveAll(x => (x.Task.Result == "{\"lyrics\":\"\"}" || x.Task.Result == "NotFound"));
+            for (int i = 0; i < commands.Count; i++)
+            {
+
+                commands[i].Lyrics = deserializeJson.Deserialize(commands[i].Task.Result);
+                commands[i].Lyrics.Track = commands[i].Track;
+            }
+            return commands.Select(x => x.Lyrics).ToArray();
         }
-        public int calculateAverageWords(Lyrics[] lyrics)
+        private List<int> getWordsCountFromLyrics(Lyrics[] lyrics)
         {
-            int sum = 0;
+            List<string[]> wordsPerSong = new List<string[]>();
+            lyrics = lyrics.Where(x => x.Content != "").ToArray();
             for (int i = 0; i < lyrics.Length; i++)
             {
-                sum = sum + GetLyricsWordCount(lyrics[i].Content);
+                wordsPerSong.Add(GetLyricsWordSplit(lyrics[i].Content));
             }
-            return sum / lyrics.Length;
+            return wordsPerSong.Select(x => x.Length).ToList();
         }
-        /// <summary>
-        /// Filters a release if they contain duplicates; merging media so it contains unique tracks. 
-        /// </summary>
-        /// <param name="Release">Release which contains duplicate tracks within their media</param>
-        /// <returns></returns>
-        public List<Release> FilterDuplicateTracks(List<Release> release)
+        public double calculateAverageWords(Lyrics[] rawlyrics)
         {
-            var nullReleases = release.Where(x => x.Media == null).ToList();
-            int deleted = release.RemoveAll(x => x.Media == null);
-            for (int i = 0; i < release.Count; i++)
-            {
-                var tracks = release[i].Media.Where(x => x != null && x.Tracks != null).SelectMany(x => x.Tracks).ToList();
-                for (int j = 0; j < tracks.Count; j++)
-                {
-                    tracks[j].Release = release[i].Title;
-                    tracks[j].ReleaseID = release[i].ID;
-                }
-            }
-            var allTracks = release.Where(x => x != null && x.Media != null).SelectMany(x => x.Media).SelectMany(y => y.Tracks).ToList();
-            var duplicateTracks = allTracks.GroupBy(x => x.Title)
-                                        .Where(g => g.Count() > 1)
-                                        .Select(y => y)
-                                        .ToList();
-
-            var dt = duplicateTracks.SelectMany(x => x).ToList();
-            for (int i = 0; i < release.Count; i++)
-            {
-                List<string> names = dt.Select(x => x.Title).ToList();
-                release[i].Media[0].Tracks.RemoveAll(x => names.Contains(x.Title));
-            }
-            /*for (int i = 0; i < dt.Count; i++)
-            {
-                tracks.Remove(dt[i]);
-            }*/
-            for (int k = 0; k < duplicateTracks.Count; k++)
-            {
-                var randomCopy = duplicateTracks[k].First();
-                release.Where(x => x.ID == randomCopy.ReleaseID).Select(x => x).First().Media[0].Tracks.Add(randomCopy);
-            }
-
-            return release;
+            return getWordsCountFromLyrics(rawlyrics).Average();
         }
-        public Lyrics GetLyrics(Track track)
+        public double CalculateStdDev(Lyrics[] rawlyrics)
+        {
+            var values = getWordsCountFromLyrics(rawlyrics).ToArray();
+            double ret = 0;
+            if (values.Count() > 0)
+            {
+                //Compute the Average      
+                double avg = values.Average();
+                //Perform the Sum of (value-avg)_2_2      
+                double sum = values.Sum(d => Math.Pow(d - avg, 2));
+                //Put it all together      
+                ret = Math.Sqrt((sum) / (values.Count() - 1));
+            }
+            return ret;
+        }
+        public double CalculateVariance(Lyrics[] rawlyrics)
+        {
+            var values = getWordsCountFromLyrics(rawlyrics).ToArray();
+            double ret = 0;
+            if (values.Count() > 0)
+            {
+                //Compute the Average      
+                double avg = values.Average();
+                //Perform the Sum of (value-avg)_2_2      
+                ret = values.Sum(d => Math.Pow(d - avg, 2));
+                return ret / values.Length;
+            }
+            return -1;
+        }
+        public Task GetLyrics(Track track)
         {
             CommandFactory commandFactory = new GetLyricsFactory(track, _service);
             Command command = commandFactory.GetCommand();
-            command.ExecuteAsync().Wait();
-            GetLyrics getLyrics = (GetLyrics)command;
-            getLyrics.Lyrics.Track = track;
-            return getLyrics.Lyrics;
-        }
-        public Track[] GetUniqueTracks(List<Release> releases)
-        {
-            var filtered = FilterDuplicateTracks(releases);
-            return filtered.Where(x => (x != null && x.Media != null))
-                .SelectMany(x => x.Media)
-                .SelectMany(y => y.Tracks)
-                .ToArray();
-        }
-        public List<Release> GetUniqueTracks(Artist artist)
-        {
-            return FilterDuplicateTracks(new List<Release>(artist.Releases));
+            return command.ExecuteAsync();
         }
         public Artist PickArtist(string artistName)
         {
@@ -135,27 +118,29 @@ namespace ArtistStats_web.Services
                 Command command = commandFactory.GetCommand();
                 command.ExecuteAsync();
                 GetArtistsByName artistsRepo = (GetArtistsByName)command;
-                commandFactory = new GetReleasesByArtistsIDFactory(artistsRepo.Artists[0], _service);
+                commandFactory = new GetReleasesByArtistsIDAsyncFactory(artistsRepo.Artists[0], _service);
                 command = commandFactory.GetCommand();
                 command.ExecuteAsync();
-                var releasesRepo = (GetReleasesByArtistsID)command;
+                var releasesRepo = (GetReleasesByArtistsIDAsync)command;
                 ReleaseResults releaseResults = releasesRepo.ReleaseResults;
                 bool firstArtistHasreleases = releaseResults.Releases.Count > 0;
                 if (firstArtistHasreleases)
                 {
                     artistsRepo.Artists[0].Releases = releasesRepo.ReleaseResults.Releases.ToArray();
-                    return Artists[0];
+                    Artist = artistsRepo.Artists[0];
+                    return Artist;
                 }
                 else
                 {
-                    commandFactory = new GetReleasesByArtistsIDFactory(artistsRepo.Artists[1], _service);
+                    commandFactory = new GetReleasesByArtistsIDAsyncFactory(artistsRepo.Artists[1], _service);
                     command = commandFactory.GetCommand();
                     command.ExecuteAsync();
-                    releasesRepo = (GetReleasesByArtistsID)command;
+                    releasesRepo = (GetReleasesByArtistsIDAsync)command;
                     if (releasesRepo.ReleaseResults.Releases.Count > 0)
                     {
                         artistsRepo.Artists[1].Releases = releasesRepo.ReleaseResults.Releases.ToArray();
-                        return artistsRepo.Artists[1];
+                        Artist = artistsRepo.Artists[1];
+                        return Artist;
                     }
                 }
             }
@@ -166,6 +151,22 @@ namespace ArtistStats_web.Services
             throw new Exception("No Release data found on top 2 artists");
         }
 
+        public ArtistStats calculateArtistStats(Artist Artist)
+        {
+            ArtistStats stats = new ArtistStats();
+            Lyrics[] lyrics = getAllLyrics(Artist);
+            stats.ArtistName = Artist.Name;
+            stats.AverageWords = calculateAverageWords(lyrics);
+            stats.StandardDeviation = CalculateStdDev(lyrics);
+            stats.Variance = CalculateVariance(lyrics);
+            List<Track> tracks = lyrics.Select(x => x.Track).ToList();
+            tracks.Sort((t1, t2) => t1.Length.CompareTo(t2.Length));
+            int longestTrackLength = (int)tracks[0].Length / 60000;
+            int shortestTrackLength = (int)tracks[tracks.Count - 1].Length / 60000;
+            stats.LongestTrack = string.Format("{0} - {1} minutes", tracks[0].Title, longestTrackLength);
+            stats.ShortestTrack = string.Format("{0} - {1} minutes", tracks[tracks.Count - 1].Title, shortestTrackLength);
+            return stats;
+        }
     }
 }
 //list usage in commands of methods belonging to iservices n create it

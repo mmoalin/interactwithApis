@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ArtistStats_web;
+using ArtistStats_web.Models;
 using ArtistStats_web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,22 +15,22 @@ using Microsoft.AspNetCore.Mvc;
 public class ArtistStatsController : ControllerBase
 {
     [HttpGet]
-    public string Get()
+    public ArtistStats Get()
     {
         string[] keyVal = Request.QueryString.Value
             .Substring(Request.QueryString.Value
                 .IndexOf('?') + 1)
                     .Split('=');
-        MusicStatService lo = new MusicStatService(); //TODO: dependency injection
-        Task<string> res = null;
+        MusicInterpretor lo = new MusicInterpretor(new MusicStatService());//TODO: dependency injection
+        Artist artist;
+        string artistName;
         if (keyVal[0] == "artistname")//ArtistResults
-            res = lo.getArtists(keyVal[1]);
-        else if (keyVal[0] == "artistid")//Artist
-            res = lo.getReleases(keyVal[1]);
-        else if (keyVal[0] == "releaseid")//Release
-            res = lo.getTracks(keyVal[1]);
-        res.Wait();
-        return res.Result;
+            artistName = keyVal[1];
+        else
+            artistName = keyVal[0];
+        artist = lo.PickArtist(artistName);
+        return lo.calculateArtistStats(artist);
+
     }
 }
 

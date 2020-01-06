@@ -19,6 +19,17 @@ namespace ArtistStats_web.Commands
             return _command;
         }
     }
+    public class GetLyricsAsyncFactory : CommandFactory
+    {
+        public GetLyricsAsyncFactory(Models.Track track, Services.IMusicStatService service)
+        {
+            _command = new GetLyricsAsync(track, service);
+        }
+        public override Command GetCommand()
+        {
+            return _command;
+        }
+    }
     public class GetTracksByReleaseIDFactory : CommandFactory
     {
         public GetTracksByReleaseIDFactory(Models.Release release, Services.IMusicStatService service)
@@ -30,11 +41,33 @@ namespace ArtistStats_web.Commands
             return _command;
         }
     }
+    public class GetTracksByReleaseIDAsyncFactory : CommandFactory
+    {
+        public GetTracksByReleaseIDAsyncFactory(Models.Release release, Services.IMusicStatService service)
+        {
+            _command = new GetTracksByReleaseIDAsync(release, service);
+        }
+        public override Command GetCommand()
+        {
+            return _command;
+        }
+    }
     public class GetReleasesByArtistsIDFactory : CommandFactory
     {
         public GetReleasesByArtistsIDFactory(Models.Artist artist, Services.IMusicStatService service)
         {
             _command = new GetReleasesByArtistsID(artist, service);
+        }
+        public override Command GetCommand()
+        {
+            return _command;
+        }
+    }
+    public class GetReleasesByArtistsIDAsyncFactory : CommandFactory
+    {
+        public GetReleasesByArtistsIDAsyncFactory(Models.Artist artist, Services.IMusicStatService service)
+        {
+            _command = new GetReleasesByArtistsIDAsync(artist, service);
         }
         public override Command GetCommand()
         {

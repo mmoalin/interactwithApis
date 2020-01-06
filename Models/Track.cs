@@ -7,6 +7,7 @@ namespace ArtistStats_web.Models
 {
     public class Track
     {
+        public decimal Length { get; set; }
         public Artist Artist { get; set; }
         public string ID { get; set; }
         public int Position { get; set; }

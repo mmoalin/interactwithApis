@@ -5,14 +5,6 @@ namespace ArtistStats_web.Services
 {
     public class MusicStatService : IMusicStatService
     {
-        public async Task<string> CalculateAverageWords(string artistName)
-        {
-            var artistID = await getArtists(artistName);
-            //select best artist
-            //get all tracks
-            //calculate average (sum of words of all tracks / total number of tracks)
-            return artistID;
-        }
         private async Task<string> FetchData(string URI)
         {
             HttpClient client = new HttpClient();

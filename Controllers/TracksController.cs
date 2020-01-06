@@ -39,8 +39,6 @@ public class TracksController : ControllerBase
 
             artist = lo.PickArtist(artistName);
             Track[] tracks = artist.Releases.Where(x => (x != null && x.Media != null)).SelectMany(x => x.Media).SelectMany(x => x.Tracks).ToArray(); ;
-            if(option == "dedupedOption")
-                    tracks = lo.GetUniqueTracks(new List<Release>(artist.Releases));
 
             _tracks = new List<Track>(tracks);
         }
